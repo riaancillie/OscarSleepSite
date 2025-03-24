@@ -124,20 +124,28 @@ async function onChangeSessions()
 
 async function getDataJson(url) {
     let result = null;
+    let gzArrayBuf = null;
 
     try{
-        result = await fetch(url);
-        if (result.ok == false)
-            throw new Error("Failed to fetch url: "+result.status);
+        if (url instanceof File){            
+            gzArrayBuf = await url.arrayBuffer();
+        }
+        else {
+            result = await fetch(url);
+            if (result.ok == false)
+                throw new Error("Failed to fetch url: "+result.status);
+
+            gzArrayBuf = await result.arrayBuffer();
+        }
+
     }
     catch(err){
         console.error(`Could not fetch data from url ${url}`, err);
         return;
     }
 
-    if (result == null) return;
+    if (gzArrayBuf == null) return;
 
-    let gzArrayBuf = await result.arrayBuffer();
     let gzBytes = new Uint8Array(gzArrayBuf);
     let jsonBytes = fflate.decompressSync(gzBytes);
     let jsonStr = new TextDecoder().decode(jsonBytes);
@@ -1278,7 +1286,7 @@ async function createChartForChannel(sessions, channelCodes, options) {
             labelFontColor: "#ffffff",*/
             titleFontFamily: 'Poppins',
             labelFontFamily: 'Poppins',
-            labelFontSize: 11,            
+            labelFontSize: 11,
             //labelMaxWidth: 200,
             //labelAutoFit: false,
             //labelWrap: true,
@@ -1555,20 +1563,167 @@ function sortArr(arr) {
     return ary;
 }
 
-window.addEventListener("resize", function() {
-    clearTimeout(tmrWindowResize);
-    tmrWindowResize = setTimeout(onWindowResize, 500);
-});
-
-$("body").on("keydown", function(evt) {
-    switch (evt.code){
-        case "ArrowLeft": panLeft(); break;
-        case "ArrowRight": panRight(); break;
-        case "Minus":
-        case "NumpadSubtract": zoomOut(); break;
-        case "NumpadAdd": zoomIn(); break
+function getShortCodeFromUrl(){
+    let pattern = new RegExp(/\/view\/(?<shortCode>[^\/?]*)/, "gi");
+    let match = pattern.exec(location.pathname);
+    if (match){
+        return match.groups["shortCode"];
     }
-    //console.log(evt.code);
-});
+    return null;
+}
 
-document.addEventListener("scroll", () => {hideFlowChartOverlayTooltip()});
+function showDragDropPanel(){
+    $("#pnlFileDragDrop .dropbox").click((evt) => {
+        let rect = $("#pnlFileDragDrop .upload-box")[0].getBoundingClientRect();
+
+        if (evt.clientX >= rect.x && evt.clientX <= rect.right && evt.clientY >= rect.y && evt.clientY <= rect.bottom)
+        {
+            $("#txtFileSelect").click();
+        }
+    });
+
+    $("#txtFileSelect").on("change", async (evt) => {
+        if (validateFile($("#txtFileSelect")[0])){
+            $("#pnlFileDragDrop").addClass("hidden");
+            loadData($("#txtFileSelect")[0].files[0]);
+        } else {
+            let anim = $("#pnlFileDragDrop .anim-error")[0];
+            anim.seek(0);
+            $("#pnlFileDragDrop .anim-error").removeClass("hidden");
+            anim.play();
+            await delay(1000);
+            $("#pnlFileDragDrop .anim-error").removeClass("hidden");            
+        }
+    });
+
+
+    let showDragOk = () => {
+        $("#pnlFileDragDrop .anim-error").addClass("hidden");
+
+        let anim = $("#pnlFileDragDrop .anim-dragok")[0];
+        anim.seek(0);
+        anim.play();
+
+        $("#pnlFileDragDrop .anim-dragok").removeClass("hidden");
+    };
+
+    let busyDragging = () => {
+        return !$("#pnlFileDragDrop .anim-error").hasClass("hidden") ||
+            !$("#pnlFileDragDrop .anim-dragok").hasClass("hidden")
+    }
+
+    let validateFile = (event) => {        
+        if (event.dataTransfer && event.dataTransfer.items && event.dataTransfer.items.length == 1){
+            let itm = event.dataTransfer.items[0];
+            if (itm.type == "application/x-gzip"){
+                let file = itm.getAsFile();
+                if (file == null) return true;
+                console.log(file);
+                if (file.name.endsWith(".json.gz")) return true;
+            }
+
+        } else if (event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files == 1) {
+            let file = event.dataTransfer.files[0];
+            if (file.name.endsWith(".json.gz")){
+                return true;
+            }
+        } else if (event.files.length == 1){
+            let file = event.files[0];
+            if (file.name.endsWith(".json.gz")){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    $("#pnlFileDragDrop .dropbox").on("dragover", (evt) => {
+
+        let event = evt.originalEvent;
+        event.preventDefault();
+
+        //$("#pnlFileDragDrop .upload-container, #pnlFileDragDrop .upload-box,#pnlFileDragDrop .upload-box > *").css("pointer-events", "none");
+
+        if (busyDragging())
+            return;
+
+
+        if (validateFile(event)){
+            showDragOk();
+        }  else {
+            let anim = $("#pnlFileDragDrop .anim-error")[0];
+            anim.seek(0);
+            $("#pnlFileDragDrop .anim-error").removeClass("hidden");
+            anim.play();
+        }
+
+    });
+
+    $("#pnlFileDragDrop .dropbox").on("drop", async (evt) => {
+        let event = evt.originalEvent;
+        event.preventDefault();
+        if (!validateFile(event)) return;
+
+
+        let file = null;
+        if (event.dataTransfer.items && event.dataTransfer.items.length == 1){
+            file = event.dataTransfer.items[0].getAsFile();
+        } else if (event.dataTransfer.files && event.dataTransfer.files == 1) {
+             file = event.dataTransfer.files[0];
+        }
+
+        await delay(200);
+
+        $("#pnlFileDragDrop").addClass("hidden");
+        loadData(file);
+    });
+
+    $("#pnlFileDragDrop .dropbox").on("dragleave", (evt) => {
+        let e = evt.originalEvent;
+        let event = evt.originalEvent;
+        event.preventDefault();
+        $("#pnlFileDragDrop .anim-error").addClass("hidden");
+        $("#pnlFileDragDrop .anim-dragok").addClass("hidden");
+
+    });
+
+    $("#pnlFileDragDrop").removeClass("hidden");
+}
+
+async function main(){
+
+    //await loadData("data.json.gz");
+    //await loadData("2025-01-24.json.gz");
+
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+
+    window.addEventListener("resize", function() {
+        clearTimeout(tmrWindowResize);
+        tmrWindowResize = setTimeout(onWindowResize, 500);
+    });
+
+    $("body").on("keydown", function(evt) {
+        switch (evt.code){
+            case "ArrowLeft": panLeft(); break;
+            case "ArrowRight": panRight(); break;
+            case "Minus":
+            case "NumpadSubtract": zoomOut(); break;
+            case "NumpadAdd": zoomIn(); break
+        }
+        //console.log(evt.code);
+    });
+
+    var locale = window.navigator.userLanguage || window.navigator.language;
+    moment.locale(locale);
+    restoreSettings();
+
+    let shortCode = getShortCodeFromUrl();
+    if (shortCode){
+        await loadData("https://riaancillie.blob.core.windows.net/test/data.json.gz");
+    }else {
+        showDragDropPanel();
+    }
+
+    document.addEventListener("scroll", () => {hideFlowChartOverlayTooltip()});
+}
+
