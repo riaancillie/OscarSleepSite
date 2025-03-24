@@ -2,7 +2,7 @@
     "routes": [
         {
             "route": "/view*",
-            "rewrite": "/index.html"
+            "rewrite": "/view.html"
         }
     ],
     "navigationFallback": {
