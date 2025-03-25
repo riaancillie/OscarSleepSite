@@ -18,27 +18,67 @@
         <link rel="stylesheet" href="/static/css/site.css">
     </head>
     <html>
-        <body class="light-background oldbg-forest">           
-            <div id="pnlFileDragDrop">
-                <div class="footer-image"></div>                
+        <body class="light-background ">           
+            <div class="upload-page-body">
+                <div class="footer-image"></div>
                 <div style="padding: 10px; color:white; display: flex">
                     <img src="/static/images/oscar-logo.png" height="30">
                     <span style="font-weight: 600; font-size: 1.5rem; margin-left: 10px; flex-grow: 1">OSCAR <span style="font-weight: 400;">Shared Session</span></span>
                 </div>
-                <div class="upload-container">
-                    <div class="upload-box" style="cursor: default">
-                        Upload functionality will be ready soon. In the meantime, you can send your shared session file directly to someone and ask them to open it using the <a href="https://oscarsleep.org/view">viewer available at https://oscarsleep.org/view</a>
+
+                <div id="pnlUpload">                
+                    <input type="file" id="txtFileSelect" hidden accept=".json.gz">                
+                    <div class="upload-container">
+                        <div class="upload-box dotted-box">
+                            <h4>Share a session</h4>
+                            Drag a shared session file here or click to select a file                        
+                            <lottie-player class="anim-error hidden" src="/static/images/anim_error.lottie.json" background="transparent"  speed="1"  style="max-width: 300px; max-height: 300px; width: 40vw"></lottie-player>
+                            <lottie-player class="anim-dragok hidden" src="/static/images/anim_drag_ok.lottie.json" background="transparent"  speed="1"  style="max-width: 300px; max-height: 300px; width: 40vw"></lottie-player>
+                        </div>
+                    </div>
+                    <div class="dropbox"></div>
+                </div>
+
+                <div id="pnlCaptureEmail" class="step-box hidden">                    
+                    <div class="dotted-box">
+                        <form action="javascript:onSubmitCaptureEmail(0)" onsubmit="onSubmitCaptureEmail">
+                            <div >Enter your email address</div>
+                            <div style="margin-bottom: 20px; font-size: 0.8rem;">A verification email will be sent here</div>
+                            <div style="margin-bottom: 15px"><input name="email" type="email" class="form-control" required autocomplete="email"></div>
+                            <div><button type="submit" class="btn btn-outline-light" style="opacity:0.8; width: 100%">Next</button></div>
+                        </form>
+                    </div>
+                    
+                </div>
+
+                <div id="pnlTurnstile" class="step-box hidden">
+                    <div class="dotted-box">                        
+                            
                     </div>
                 </div>
-                
+
+                <div id="pnlProgress" class="step-box hidden">
+                    <div class="dotted-box">
+                        <div style="margin-bottom: 15px;">Uploading...</div>
+                        <lottie-player class="anim-upload" src="/static/images/anim_upload.lottie.json" background="transparent"  speed="1"  style="max-width: 300px; max-height: 300px; width: 40vw"></lottie-player>
+                    </div>
+                </div>
+
+                <div id="pnlResultOK" class="step-box hidden">
+                    <div class="dotted-box">
+                        <div style="margin-bottom: 15px;">Your session has been uploaded successfully! Please check your email to finish.</div>
+                        <lottie-player class="anim-email" src="/static/images/anim_email.lottie.json" background="transparent" loop speed="1"  style="max-width: 300px; max-height: 300px; width: 40vw"></lottie-player>
+                    </div>
+                </div>
+
+                <div id="pnlResultFail" class="step-box hidden">
+                    <div class="dotted-box">
+                        The session failed to upload. Please refresh the page and try again.
+                        <lottie-player class="anim-error" src="/static/images/anim_error.lottie.json" background="transparent"   speed="1"  style="max-width: 300px; max-height: 300px; width: 40vw"></lottie-player>
+                    </div>
+                </div>
             </div>
-
          
-
-            <template id="tmpChartToolbar">
-                
-            </template>
-
             <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.min.js"></script>
             <script src="https://cdn.canvasjs.com/ga/canvasjs.min.js"></script>
@@ -46,11 +86,12 @@
             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
             <script src="https://code.createjs.com/1.0.0/easeljs.min.js"></script>
             <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
-            
-
+            <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"></script>
+            <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+            <script src="/static/js/oscar/upload.js"></script>
             <script>
                 $(async () => {
-                    
+                    main();
                 });
             </script>
 

@@ -1719,7 +1719,8 @@ async function main(){
 
     let shortCode = getShortCodeFromUrl();
     if (shortCode){
-        await loadData("https://riaancillie.blob.core.windows.net/test/data.json.gz");
+        $("#pnlFileDragDrop").addClass("hidden");
+        await loadData(`/api/GetSharedSession?shortCode=`+encodeURIComponent(shortCode));
     }else {
         showDragDropPanel();
     }

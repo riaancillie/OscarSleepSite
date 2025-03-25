@@ -232,7 +232,7 @@ table.tbl.table-striped-light td{
     background-position: bottom left;
 }
 
-#pnlFileDragDrop .upload-container{
+#pnlFileDragDrop .upload-container, .upload-page-body .upload-container{
     display: flex; 
     flex-grow: 1; 
     justify-content: space-around; 
@@ -240,26 +240,99 @@ table.tbl.table-striped-light td{
     padding-bottom: 40vh; 
     padding-left: 50px; 
     padding-right: 50px; 
-    color: #ffffffa0
+    color: #ffffffb7
 }
 
-#pnlFileDragDrop .upload-box{
+.dotted-box{
     padding: 50px; 
     border-radius: 12px; 
     border-style: dashed; 
     border-color: #ffffff80; 
-    backdrop-filter: blur(10px); 
-    cursor: pointer;
+    backdrop-filter: blur(10px);     
     display: flex;
     flex-direction: column;
     align-items: center;
+    font-size:1.3rem;
 }
 
-#pnlFileDragDrop .dropbox{
+@media only screen and (max-width: 560px) {
+    .dotted-box{
+        padding: 20px; 
+    }
+}
+
+
+#pnlFileDragDrop .upload-box, .upload-page-body .upload-box{
+    
+    cursor: pointer;
+    
+}
+
+#pnlFileDragDrop .dropbox, #pnlUpload .dropbox{
     position:fixed;
     top: 0px;
     left: 0px;
     right: 0px;
     bottom: 0px;   
     cursor: pointer; 
+}
+
+.upload-page-body{
+    position:fixed;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+    background: linear-gradient(180deg, rgba(16, 4, 94, 1) 0%, rgba(220, 91, 85, 1) 100%);
+    display: flex;
+    flex-direction: column;
+}
+
+.upload-page-body .footer-image{
+    background-image: url("/static/images/sleep_footer_plain.svg");
+    width: min(400px, 100vw);
+    height: max(200px, 50vh);
+    position: fixed;
+    bottom: 0px;
+    left: 0px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: bottom left;
+}
+
+#pnlUpload{
+    flex-grow: 1;
+    display:flex;
+}
+
+.step-box{
+    flex-grow: 1;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding-bottom: 40vh;
+    padding-left: 50px;
+    padding-right: 50px;
+    color: #ffffffb7;
+}
+
+#pnlCaptureEmail{
+    
+}
+
+
+#pnlTurnstile{
+
+}
+
+#pnlUpload{
+
+}
+
+#pnlResultOK{
+
+}
+
+#pnlResultFail{
+
 }

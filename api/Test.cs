@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 
+
 namespace oscarsleep.function
 {
     public class Test
@@ -17,8 +18,9 @@ namespace oscarsleep.function
         [Function("Test")]
         public IActionResult Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequest req)
         {
-            _logger.LogInformation("C# HTTP trigger function processed a request.");
-            return new OkObjectResult("Welcome to Azure Functions!");
+            _logger.LogInformation("C# HTTP trigger function processed a request.");            
+
+            return new OkObjectResult("API v1 Ready");
         }
     }
 }
