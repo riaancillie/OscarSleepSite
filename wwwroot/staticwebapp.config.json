@@ -5,21 +5,13 @@
             "rewrite": "/view.html"
         },
         {
-            "route": "/view/*",
-            "rewrite": "/view.html"
-        },
-        {
             "route": "/upload*",
             "rewrite": "/upload.html"
         },
         {
             "route": "/verify*",
             "rewrite": "/verify.html"
-        },
-        {
-            "route": "/verify/*",
-            "rewrite": "/verify.html"
-        },
+        },        
         {
             "route": "/",
             "redirect": "https://www.sleepfiles.com/OSCAR/"
