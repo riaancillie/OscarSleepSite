@@ -15,7 +15,7 @@ namespace oscarsleep
             string connectionString = Environment.GetEnvironmentVariable("COMMUNICATION_SERVICES_CONNECTION_STRING");
             var emailClient = new EmailClient(connectionString);
 
-            var emailContent = new EmailContent("Verify sharing your OSCAR share"){
+            var emailContent = new EmailContent("Verify sharing your OSCAR session"){
                 PlainText = $"To confirm sharing your uploaded file please go to {verifyUrl}",
                 Html = TemplateVerify.Replace("<%VERIFY_URL%>", verifyUrl)
             };
