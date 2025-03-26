@@ -8,9 +8,10 @@
       "apiLanguage": "dotnetisolated",
       "apiVersion": "6.0",
       "apiBuildCommand": "dotnet publish -c Release",
+      "host": "0.0.0.0",
       "env": {
         "STORAGE_CONNECTION_STRING": "1243"
-      }
+      }      
     }
   }
 }

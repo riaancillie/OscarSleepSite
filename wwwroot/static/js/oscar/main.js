@@ -63,6 +63,7 @@ let graphMode = "Pan";
 let lastViewportMin = null;
 let lastViewportMax = null;
 
+
 function setDateFormat(formatStr){
     dateFormat = formatStr;
     localStorage.setItem("dateFormat", dateFormat);
@@ -220,12 +221,28 @@ function displayChannelList(data){
 
         $(row).append([cellCheck, cellLabel]);
 
-        $("input", cellCheck).on("change", () => {
+        $("input", cellCheck).on("change", async () => {
             chShow.Visible = $("input", cellCheck).prop("checked");
             let graph = graphs.find(g => g.channelCodes.indexOf(channel.Code) >= 0);
+            
+            let storedViewportMin = lastViewportMin;
+            let storedViewportMax = lastViewportMax;
+
+            if (graph == null){                
+                $("#pnlLoading").show();
+                $("#pnlLoadingText").text(`Creating ${channel.Name} Chart...`);
+                await delay(1);
+                await createChartForChannel(jsonData.Sessions, channel.Code, {visible: chShow.Visible});
+                updateAllCharts();
+                graph = graphs.find(g => g.channelCodes.indexOf(channel.Code) >= 0);
+                $("#pnlLoading").hide();
+            }
+
             if (graph){
                 $(graph.container).toggleClass("hidden", !chShow.Visible);
                 graph.chart.options.x_visible = chShow.Visible;
+                lastViewportMin = storedViewportMin;
+                lastViewportMax = storedViewportMax;
                 graph.chart.options.axisX.viewportMinimum = lastViewportMin;
                 graph.chart.options.axisX.viewportMaximum = lastViewportMax;
                 graph.chart.render();
@@ -495,7 +512,7 @@ async function makeWaveformCharts(data){
     removeChannelsFromList(["FLG"]);
 
     for (let channelCode of channelCodes){
-        //if (graphs.length > 2) continue; //RC LIMITCHARTS
+        //if (graphs.length > 2) continue; //RC LIMITCHARTS        
         if (IGNORE_CHANNELS.indexOf(channelCode) >= 0) continue;
 
         let chartVis = channelVisibility.find(x => x.Code == channelCode)
@@ -503,11 +520,15 @@ async function makeWaveformCharts(data){
             console.log("Unknown chart visibility");
         }
         let showChart = chartVis.Visible;
+        if (!showChart) continue;
 
         await createChartForChannel(sessions, channelCode, {visible: showChart});
     }
 
+    updateAllCharts();    
+}
 
+function updateAllCharts(){
     for (var i = 0; i < graphs.length; i++) {
         let newSettings = {
             labelAngle: 0,
@@ -534,7 +555,6 @@ async function makeWaveformCharts(data){
         graphs.forEach(x => x.chart.render());
         setChartMode(graphMode);
     }, 500);
-
 }
 
 async function overlayFlowRespiratoryEvents(data){
@@ -1191,6 +1211,9 @@ function onUpdateZoomRange(){
     hideFlowChartOverlayTooltip();
 
     timeline.updateZoomMask(dtStart, dtEnd);
+
+    lastViewportMin = dtStart;
+    lastViewportMax = dtEnd;
 }
 
 async function createChartForChannel(sessions, channelCodes, options) {
