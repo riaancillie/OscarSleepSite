@@ -34,6 +34,30 @@ namespace oscarsleep
             Console.WriteLine($"Email Sent. Status = {emailSendOperation.Value.Status}");
         }
 
+        public static async Task SendBugReport(string referer, string text)
+        {
+            string connectionString = Environment.GetEnvironmentVariable("COMMUNICATION_SERVICES_CONNECTION_STRING");
+            string recipient = Environment.GetEnvironmentVariable("BUGREPORT_RECIPIENT");
+            var emailClient = new EmailClient(connectionString);
+
+            var emailContent = new EmailContent("OSCAR Bug Report"){
+                PlainText = referer+"\n\n"+text,                
+            };
+
+            var emailMsg = new EmailMessage(
+                senderAddress: "DoNotReply@oscarsleep.org",
+                recipientAddress: recipient,
+                content: emailContent
+            );
+
+            var emailSendOperation = await emailClient.SendAsync(
+                wait: WaitUntil.Completed,
+                message: emailMsg
+                );
+            
+            Console.WriteLine($"Email Sent. Status = {emailSendOperation.Value.Status}");
+        }
+
 
         protected static string TemplateVerify = """
 <!DOCTYPE html "-//w3c//dtd xhtml 1.0 transitional //en" "http://www.w3.org/tr/xhtml1/dtd/xhtml1-transitional.dtd">
